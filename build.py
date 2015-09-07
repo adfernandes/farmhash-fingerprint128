@@ -6,6 +6,8 @@ import subprocess
 bdir = '_build'
 
 cxx = '/Users/andrew/Developer/Toolchains/clang+llvm-3.7.0/bin/clang++'
+llo = '/Users/andrew/Developer/Toolchains/clang+llvm-3.7.0/bin/opt'
+
 opt = ['-Os', '-DNDEBUG']
 
 # Notes:
@@ -72,3 +74,15 @@ for i in range(len(assume)):
         asm.extend(['-S', '-o', os.path.join(bdir, 'farmhash~' + names[i] + '~x' + arch + '.s')])
         print(' '.join(asm))
         subprocess.check_call(asm)
+
+        llvm = cmd[:]
+        ll_path = os.path.join(bdir, 'farmhash~' + names[i] + '~x' + arch + '.ll')
+        llvm.extend(['-S', '-emit-llvm', '-o', ll_path])
+        print(' '.join(llvm))
+        subprocess.check_call(llvm)
+
+        p = subprocess.Popen([llo, '-analyze', '-dot-callgraph', '-std-link-opts', ll_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = p.communicate() # eat stdout and stderr as they are unnecessary and distracting
+        shutil.move('callgraph.dot', os.path.join(bdir, 'farmhash~' + names[i] + '~x' + arch + '.dot'))
+
+subprocess.check_call(['bash', '-c', '--', 'source callgraph.sh'])
