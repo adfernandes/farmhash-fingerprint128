@@ -1,0 +1,3 @@
+[submodule "farmhash"]
+	path = farmhash
+	url = https://github.com/adfernandes/farmhash.git
