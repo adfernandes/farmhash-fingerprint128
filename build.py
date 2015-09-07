@@ -64,11 +64,11 @@ for i in range(len(assume)):
         cmd.append('farmhash/src/farmhash.cc')
 
         obj = cmd[:]
-        obj.extend(['-c', '-o', os.path.join(bdir, 'farm~' + names[i] + '~x' + arch + '.o')])
+        obj.extend(['-c', '-o', os.path.join(bdir, 'farmhash~' + names[i] + '~x' + arch + '.o')])
         print(' '.join(obj))
         subprocess.check_call(obj)
 
         asm = cmd[:]
-        asm.extend(['-S', '-o', os.path.join(bdir, 'farm~' + names[i] + '~x' + arch + '.s')])
+        asm.extend(['-S', '-o', os.path.join(bdir, 'farmhash~' + names[i] + '~x' + arch + '.s')])
         print(' '.join(asm))
         subprocess.check_call(asm)
