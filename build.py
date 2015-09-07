@@ -53,7 +53,7 @@ for i in range(len(assume)):
         if arch == '32':
             cmd.append('-UFARMHASH_UINT128_T_DEFINED')
         elif arch == '64':
-            cmd.append('-UFARMHASH_UINT128_T_DEFINED') # .extend(['-Duint128_t=__uint128_t', '-DFARMHASH_UINT128_T_DEFINED=1'])
+            cmd.extend(['-Duint128_t=__uint128_t', '-DFARMHASH_UINT128_T_DEFINED=1'])
 
         for k in range(i+1):
             cmd.append(assume[k])
