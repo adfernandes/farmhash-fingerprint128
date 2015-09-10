@@ -61,8 +61,8 @@ namespace {
 
     // Byteswapping functions.
 
-    inline uint32_t BSwap32(uint32_t value) { return bswap_32(value); }
-    inline uint64_t BSwap64(uint64_t value) { return bswap_64(value); }
+    inline uint32_t ByteSwap32(uint32_t value) { return bswap_32(value); }
+    inline uint64_t ByteSwap64(uint64_t value) { return bswap_64(value); }
 
     #if defined(_MSC_VER)
 
@@ -84,7 +84,7 @@ namespace FarmHash {
 
         inline uint64_t Fetch(const uint8_t *p) { return Fetch64(p); }
         inline uint64_t RotateRight(uint64_t value, int shift) { return RotateRight64(value, shift); }
-        inline uint64_t BSwap(uint64_t value) { return BSwap64(value); }
+        inline uint64_t ByteSwap(uint64_t value) { return ByteSwap64(value); }
 
         // Some primes between 2^63 and 2^64 for various uses.
 
