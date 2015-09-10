@@ -1,9 +1,7 @@
-// FarmHash, by Geoff Pike
-//
-// https://github.com/google/farmhash
-//
-// Provides a 128-bit hash 'Fingerprint128' equivalent to 'CityHash128 (v1.1.1)',
-// which itself is equivalent to Google's 'FarmHash (v1.1)' as per GitHub repo.
+// An implementation of `Fingerprint128` from Google's
+// [`FarmHash`](https://github.com/google/farmhash) version `1.1` suite,
+// which is equivalent to Google's
+// [`CityHash128`](https://github.com/google/cityhash) version `1.1.1`.
 //
 // Copyright (c) 2014 Google, Inc.
 //
