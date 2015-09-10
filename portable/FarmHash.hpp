@@ -47,7 +47,7 @@
 // which itself is equivalent to Google's 'FarmHash (v1.1)' as per GitHub repo.
 
 #include "Endian.hpp"
-#include "UInt128.hpp"
+#include "UInt128.hpp" // TODO: move this into the 'FarmHash' namespace?
 
 // TODO: How many of these are actually needed?
 // TODO: Replace them with their C++ equivalent?
