@@ -1,5 +1,13 @@
-# To Do
+# Read Me
 
-* Make sure the 32-bit variants make sense with the SSE and AVX options. (Does any 32-bit mode even have AVX extensions?)
-* Compile with `GCC` or `clang` on Windows, Linux, and Darwin.
-* Change the namespace wrapping for true processor independence and dispatch. Right now only a few of the functions use `NAMESPACE_FOR_HASH_FUNCTIONS`, unfortunately.
+    FarmHash, by Geoff Pike
+
+    https://github.com/google/farmhash
+
+    Provides a 128-bit hash 'Fingerprint128' equivalent to 'CityHash128 (v1.1.1)',
+    which itself is equivalent to Google's 'FarmHash (v1.1)' as per GitHub repo.
+
+    Copyright (c) 2014 Google, Inc.
+
+    Numerous Modifications and Optimizations
+    Copyright (c) 2015 Andrew Fernandes <andrew@fernandes.org>

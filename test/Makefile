@@ -19,7 +19,7 @@ test: test.cpp google.o portable.o
 test.o: test.cpp
 
 google.o: ${GOOGLE}/farmhash.cc ${GOOGLE}/farmhash.h
-	${CXX} ${CPPFLAGS} -c ${GOOGLE}/farmhash.cc -o $@
+	${CXX} ${CPPFLAGS} -Wno-unused-function -c ${GOOGLE}/farmhash.cc -o $@
 
 portable.o: ${PORTABLE}/Endian.hpp ${PORTABLE}/FarmHash.cpp ${PORTABLE}/FarmHash.hpp ${PORTABLE}/FarmHash.o ${PORTABLE}/UInt128.hpp
 	${CXX} ${CPPFLAGS} -c ${PORTABLE}/FarmHash.cpp -o $@

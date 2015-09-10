@@ -1,4 +1,14 @@
+// FarmHash, by Geoff Pike
+//
+// https://github.com/google/farmhash
+//
+// Provides a 128-bit hash 'Fingerprint128' equivalent to 'CityHash128 (v1.1.1)',
+// which itself is equivalent to Google's 'FarmHash (v1.1)' as per GitHub repo.
+//
 // Copyright (c) 2014 Google, Inc.
+//
+// Numerous Modifications and Optimizations
+// Copyright (c) 2015 Andrew Fernandes <andrew@fernandes.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,10 +28,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-// FarmHash, by Geoff Pike
+// --------------------------------------------------------------------
 //
-// TODO: Add license, Google's license, readme, and new copyright.
-
 #include "FarmHash.hpp"
 
 #include <cstring>
@@ -79,10 +87,6 @@ namespace FarmHash {
 
     namespace {
 
-        inline uint64_t Fetch(const uint8_t *p) { return Fetch64(p); }
-        inline uint64_t RotateRight(uint64_t value, int shift) { return RotateRight64(value, shift); }
-    //  inline uint64_t ByteSwap(uint64_t value) { return ByteSwap64(value); }
-
         // Some primes between 2^63 and 2^64 for various uses.
 
         const uint64_t k0 = 0xc3a5c85c97cb3127ULL;
@@ -121,10 +125,10 @@ namespace FarmHash {
         inline uint64_t HashLen0to16(const uint8_t *s, size_t len) {
             if (len >= 8) {
                 uint64_t mul = k2 + len * 2;
-                uint64_t a = Fetch(s) + k2;
-                uint64_t b = Fetch(s + len - 8);
-                uint64_t c = RotateRight(b, 37) * mul + a;
-                uint64_t d = (RotateRight(a, 25) + b) * mul;
+                uint64_t a = Fetch64(s) + k2;
+                uint64_t b = Fetch64(s + len - 8);
+                uint64_t c = RotateRight64(b, 37) * mul + a;
+                uint64_t d = (RotateRight64(a, 25) + b) * mul;
                 return HashLen16(c, d, mul);
             }
             if (len >= 4) {
@@ -148,18 +152,18 @@ namespace FarmHash {
 
         inline std::pair<uint64_t,uint64_t> WeakHashLen32WithSeeds(uint64_t w, uint64_t x, uint64_t y, uint64_t z, uint64_t a, uint64_t b) {
             a += w;
-            b = RotateRight(b + a + z, 21);
+            b = RotateRight64(b + a + z, 21);
             uint64_t c = a;
             a += x;
             a += y;
-            b += RotateRight(a, 44);
+            b += RotateRight64(a, 44);
             return std::make_pair(a + z, b + c);
         }
 
         // Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
 
         inline std::pair<uint64_t,uint64_t> WeakHashLen32WithSeeds(const uint8_t *s, uint64_t a, uint64_t b) {
-            return WeakHashLen32WithSeeds(Fetch(s), Fetch(s + 8), Fetch(s + 16), Fetch(s + 24), a, b);
+            return WeakHashLen32WithSeeds(Fetch64(s), Fetch64(s + 8), Fetch64(s + 16), Fetch64(s + 24), a, b);
         }
 
         // A subroutine for CityHash128().  Returns a decent 128-bit hash for strings
@@ -174,16 +178,16 @@ namespace FarmHash {
             if (l <= 0) {  // len <= 16
                 a = ShiftMix(a * k1) * k1;
                 c = b * k1 + HashLen0to16(s, len);
-                d = ShiftMix(a + (len >= 8 ? Fetch(s) : c));
+                d = ShiftMix(a + (len >= 8 ? Fetch64(s) : c));
             } else {  // len > 16
-                c = HashLen16(Fetch(s + len - 8) + k1, a);
-                d = HashLen16(b + len, c + Fetch(s + len - 16));
+                c = HashLen16(Fetch64(s + len - 8) + k1, a);
+                d = HashLen16(b + len, c + Fetch64(s + len - 16));
                 a += d;
                 do {
-                    a ^= ShiftMix(Fetch(s) * k1) * k1;
+                    a ^= ShiftMix(Fetch64(s) * k1) * k1;
                     a *= k1;
                     b ^= a;
-                    c ^= ShiftMix(Fetch(s + 8) * k1) * k1;
+                    c ^= ShiftMix(Fetch64(s + 8) * k1) * k1;
                     c *= k1;
                     d ^= c;
                     s += 16;
@@ -211,38 +215,38 @@ namespace FarmHash {
         uint64_t x = UInt128Low64(seed);
         uint64_t y = UInt128High64(seed);
         uint64_t z = len * k1;
-        v.first = RotateRight(y ^ k1, 49) * k1 + Fetch(s);
-        v.second = RotateRight(v.first, 42) * k1 + Fetch(s + 8);
-        w.first = RotateRight(y + z, 35) * k1 + x;
-        w.second = RotateRight(x + Fetch(s + 88), 53) * k1;
+        v.first = RotateRight64(y ^ k1, 49) * k1 + Fetch64(s);
+        v.second = RotateRight64(v.first, 42) * k1 + Fetch64(s + 8);
+        w.first = RotateRight64(y + z, 35) * k1 + x;
+        w.second = RotateRight64(x + Fetch64(s + 88), 53) * k1;
 
         // This is the same inner loop as CityHash64(), manually unrolled.
 
         do {
-            x = RotateRight(x + y + v.first + Fetch(s + 8), 37) * k1;
-            y = RotateRight(y + v.second + Fetch(s + 48), 42) * k1;
+            x = RotateRight64(x + y + v.first + Fetch64(s + 8), 37) * k1;
+            y = RotateRight64(y + v.second + Fetch64(s + 48), 42) * k1;
             x ^= w.second;
-            y += v.first + Fetch(s + 40);
-            z = RotateRight(z + w.first, 33) * k1;
+            y += v.first + Fetch64(s + 40);
+            z = RotateRight64(z + w.first, 33) * k1;
             v = WeakHashLen32WithSeeds(s, v.second * k1, x + w.first);
-            w = WeakHashLen32WithSeeds(s + 32, z + w.second, y + Fetch(s + 16));
+            w = WeakHashLen32WithSeeds(s + 32, z + w.second, y + Fetch64(s + 16));
             std::swap(z, x);
             s += 64;
-            x = RotateRight(x + y + v.first + Fetch(s + 8), 37) * k1;
-            y = RotateRight(y + v.second + Fetch(s + 48), 42) * k1;
+            x = RotateRight64(x + y + v.first + Fetch64(s + 8), 37) * k1;
+            y = RotateRight64(y + v.second + Fetch64(s + 48), 42) * k1;
             x ^= w.second;
-            y += v.first + Fetch(s + 40);
-            z = RotateRight(z + w.first, 33) * k1;
+            y += v.first + Fetch64(s + 40);
+            z = RotateRight64(z + w.first, 33) * k1;
             v = WeakHashLen32WithSeeds(s, v.second * k1, x + w.first);
-            w = WeakHashLen32WithSeeds(s + 32, z + w.second, y + Fetch(s + 16));
+            w = WeakHashLen32WithSeeds(s + 32, z + w.second, y + Fetch64(s + 16));
             std::swap(z, x);
             s += 64;
             len -= 128;
         } while (IsLikely(len >= 128));
 
-        x += RotateRight(v.first + z, 49) * k0;
-        y = y * k0 + RotateRight(w.second, 37);
-        z = z * k0 + RotateRight(w.first, 27);
+        x += RotateRight64(v.first + z, 49) * k0;
+        y = y * k0 + RotateRight64(w.second, 37);
+        z = z * k0 + RotateRight64(w.first, 27);
         w.first *= 9;
         v.first *= k0;
 
@@ -250,10 +254,10 @@ namespace FarmHash {
 
         for (size_t tail_done = 0; tail_done < len; ) {
             tail_done += 32;
-            y = RotateRight(x + y, 42) * k0 + v.second;
-            w.first += Fetch(s + len - tail_done + 16);
+            y = RotateRight64(x + y, 42) * k0 + v.second;
+            w.first += Fetch64(s + len - tail_done + 16);
             x = x * k0 + w.first;
-            z += w.second + Fetch(s + len - tail_done);
+            z += w.second + Fetch64(s + len - tail_done);
             w.second += v.first;
             v = WeakHashLen32WithSeeds(s + len - tail_done, v.first + z, v.second);
             v.first *= k0;
@@ -271,7 +275,7 @@ namespace FarmHash {
     }
 
     UInt128 CityHash128(const uint8_t *s, size_t len) {
-        return len >= 16 ? CityHash128WithSeed(s + 16, len - 16, UInt128(Fetch(s), Fetch(s + 8) + k0)) : CityHash128WithSeed(s, len, UInt128(k0, k1));
+        return len >= 16 ? CityHash128WithSeed(s + 16, len - 16, UInt128(Fetch64(s), Fetch64(s + 8) + k0)) : CityHash128WithSeed(s, len, UInt128(k0, k1));
     }
 
     UInt128 Fingerprint128(const uint8_t *s, size_t len) {

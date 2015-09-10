@@ -1,4 +1,14 @@
+// FarmHash, by Geoff Pike
+//
+// https://github.com/google/farmhash
+//
+// Provides a 128-bit hash 'Fingerprint128' equivalent to 'CityHash128 (v1.1.1)',
+// which itself is equivalent to Google's 'FarmHash (v1.1)' as per GitHub repo.
+//
 // Copyright (c) 2014 Google, Inc.
+//
+// Numerous Modifications and Optimizations
+// Copyright (c) 2015 Andrew Fernandes <andrew@fernandes.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,10 +28,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-// FarmHash, by Geoff Pike
-
-//
-// http://code.google.com/p/farmhash/
+// --------------------------------------------------------------------
 //
 // This file provides a few functions for hashing strings and other
 // data.  All of them are high-quality functions in the sense that
@@ -40,18 +47,13 @@
 // of a+b is easily derived from the hashes of a and b.  This property
 // doesn't hold for any hash functions in this file.
 //
+// --------------------------------------------------------------------
+//
 #ifndef FARM_HASH_HPP
 #define FARM_HASH_HPP
 
-// Provides a 128-bit hash 'Fingerprint128' equivalent to 'CityHash128 (v1.1.1)',
-// which itself is equivalent to Google's 'FarmHash (v1.1)' as per GitHub repo.
-
 #include "Endian.hpp"
-#include "UInt128.hpp" // TODO: move this into the 'FarmHash' namespace?
-
-// TODO: How many of these are actually needed?
-// TODO: Replace them with their C++ equivalent?
-// TODO: Do not require C++11 because of MSVC
+#include "UInt128.hpp"
 
 namespace FarmHash {
 
