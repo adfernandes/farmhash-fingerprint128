@@ -59,19 +59,16 @@ namespace {
         return uint32_in_little_endian_order(result);
     }
 
-    // Byteswapping functions.
-
-    inline uint32_t ByteSwap32(uint32_t value) { return bswap_32(value); }
-    inline uint64_t ByteSwap64(uint64_t value) { return bswap_64(value); }
+    // Cyclical rotation of unsigned integers.
 
     #if defined(_MSC_VER)
 
-        inline uint32_t RotateRight32(uint32_t value, int shift) { return _rotr  (value, shift); }
+     // inline uint32_t RotateRight32(uint32_t value, int shift) { return _rotr  (value, shift); }
         inline uint64_t RotateRight64(uint64_t value, int shift) { return _rotr64(value, shift); }
 
     #else // modern compilers automatically get this right, with no 'undefined' behaviour (https://goo.gl/ZsFpuz)
 
-        inline uint32_t RotateRight32(uint32_t value, unsigned shift) { shift &= 31; return (value >> shift) | (value << (32 - shift)); }
+     // inline uint32_t RotateRight32(uint32_t value, unsigned shift) { shift &= 31; return (value >> shift) | (value << (32 - shift)); }
         inline uint64_t RotateRight64(uint64_t value, unsigned shift) { shift &= 63; return (value >> shift) | (value << (64 - shift)); }
 
     #endif
@@ -84,7 +81,7 @@ namespace FarmHash {
 
         inline uint64_t Fetch(const uint8_t *p) { return Fetch64(p); }
         inline uint64_t RotateRight(uint64_t value, int shift) { return RotateRight64(value, shift); }
-        inline uint64_t ByteSwap(uint64_t value) { return ByteSwap64(value); }
+    //  inline uint64_t ByteSwap(uint64_t value) { return ByteSwap64(value); }
 
         // Some primes between 2^63 and 2^64 for various uses.
 
