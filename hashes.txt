@@ -1,1 +1,2 @@
+https://code.google.com/p/smhasher/
 http://blog.reverberate.org/2012/01/state-of-hash-functions-2012.html

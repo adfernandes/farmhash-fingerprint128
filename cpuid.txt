@@ -1,3 +1,0 @@
-http://softpixel.com/~cwright/programming/simd/cpuid.php
-https://en.wikipedia.org/wiki/CPUID
-https://msdn.microsoft.com/en-us/library/hskdteyh.aspx
