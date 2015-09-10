@@ -24,6 +24,8 @@
 
 #include "FarmHash.hpp"
 
+#include <cassert>
+#include <climits>
 #include <cstring>
 #include <algorithm>
 
@@ -64,44 +66,22 @@ namespace {
     inline uint32_t BSwap32(uint32_t val) { return bswap_32(val); }
     inline uint64_t BSwap64(uint64_t val) { return bswap_64(val); }
 
-    // FIXME:: FARMHASH PORTABILITY LAYER: bitwise rot
-    // See https://fossies.org/diffs/gcc/4.9.1_vs_4.9.2/gcc/config/i386/ia32intrin.h-diff.html
-    // Replace these with a template (and sprinke with const decorators)?
-
-    inline uint32_t BasicRotate32(uint32_t val, int shift) {
-      // Avoid shifting by 32: doing so yields an undefined result.
-      return shift == 0 ? val : ((val >> shift) | (val << (32 - shift)));
+    template<typename UINT, typename INTEGRAL>
+    // A portable circular shift that avoids undefined behaviour.
+    // See http://blog.regehr.org/archives/1063 and https://en.wikipedia.org/wiki/Circular_shift
+    // Most compilers optimize this to a single instruction for 32- and 64-bits. Note that
+    // GCC 4.9+ always gets it right, CLANG 3.5+ is optimal for 32-bit and sub-optimal for 64-bit,
+    // ICC 13.0+ always gets it right, and Microsoft Visual C++ is untested. Under no circumstances
+    // does this produce a branch, though, so even sub-optimal code should be fast.
+    inline UINT RotateRight(UINT val, INTEGRAL shift) {
+        const UINT mask = CHAR_BIT * sizeof(val) - 1;
+        assert(shift >= 0 && shift <= mask && "attempt to rotate by more than type-width");
+        shift &= mask;
+        return (val >> shift) | (val << ((-shift) & mask));
     }
 
-    inline uint64_t BasicRotate64(uint64_t val, int shift) {
-      // Avoid shifting by 64: doing so yields an undefined result.
-      return shift == 0 ? val : ((val >> shift) | (val << (64 - shift)));
-    }
-
-    #if defined(_MSC_VER) && defined(FARMHASH_ROTR) // FIXME
-
-        inline uint32_t Rotate32(uint32_t val, int shift) {
-          return sizeof(unsigned long) == sizeof(val) ?
-              _lrotr(val, shift) :
-              BasicRotate32(val, shift);
-        }
-
-        inline uint64_t Rotate64(uint64_t val, int shift) {
-          return sizeof(unsigned long) == sizeof(val) ?
-              _lrotr(val, shift) :
-              BasicRotate64(val, shift);
-        }
-
-    #else
-
-        inline uint32_t Rotate32(uint32_t val, int shift) {
-          return BasicRotate32(val, shift);
-        }
-        inline uint64_t Rotate64(uint64_t val, int shift) {
-          return BasicRotate64(val, shift);
-        }
-
-    #endif
+    inline uint32_t Rotate32(uint32_t val, int shift) { return RotateRight(val, shift); }
+    inline uint64_t Rotate64(uint64_t val, int shift) { return RotateRight(val, shift); }
 
 }
 
