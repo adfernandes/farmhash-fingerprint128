@@ -66,6 +66,7 @@ namespace {
 
     // FIXME:: FARMHASH PORTABILITY LAYER: bitwise rot
     // See https://fossies.org/diffs/gcc/4.9.1_vs_4.9.2/gcc/config/i386/ia32intrin.h-diff.html
+    // Replace these with a template (and sprinke with const decorators)?
 
     inline uint32_t BasicRotate32(uint32_t val, int shift) {
       // Avoid shifting by 32: doing so yields an undefined result.

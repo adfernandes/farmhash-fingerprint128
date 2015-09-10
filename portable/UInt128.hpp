@@ -21,7 +21,7 @@ inline uint64_t UInt128High64(const UInt128 &x) { return x.second; }
 
 static_assert( sizeof(UInt128) == 16, "the 'UInt128' type must be packed for compatibility with the 'uint8_t[16]' type" );
 
-#endif
+#endif // defined(UInt128)
 // ---------------------------------------------------------------------
 // Done.
 
