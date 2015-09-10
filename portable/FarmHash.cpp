@@ -24,8 +24,6 @@
 
 #include "FarmHash.hpp"
 
-#include <cassert>
-#include <climits>
 #include <cstring>
 #include <algorithm>
 
@@ -63,25 +61,20 @@ namespace {
 
     // Byteswapping functions.
 
-    inline uint32_t BSwap32(uint32_t val) { return bswap_32(val); }
-    inline uint64_t BSwap64(uint64_t val) { return bswap_64(val); }
+    inline uint32_t BSwap32(uint32_t value) { return bswap_32(value); }
+    inline uint64_t BSwap64(uint64_t value) { return bswap_64(value); }
 
-    template<typename UINT, typename INTEGRAL>
-    // A portable circular shift that avoids undefined behaviour.
-    // See http://blog.regehr.org/archives/1063 and https://en.wikipedia.org/wiki/Circular_shift
-    // Most compilers optimize this to a single instruction for 32- and 64-bits. Note that
-    // GCC 4.9+ always gets it right, CLANG 3.5+ is optimal for 32-bit and sub-optimal for 64-bit,
-    // ICC 13.0+ always gets it right, and Microsoft Visual C++ is untested. Under no circumstances
-    // does this produce a branch, though. Tested with https://goo.gl/ty1DuS.
-    inline UINT RotateRight(UINT val, INTEGRAL shift) {
-        const UINT mask = CHAR_BIT * sizeof(val) - 1;
-        assert(shift >= 0 && shift <= mask && "attempt to rotate by more than type-width");
-        shift &= mask;
-        return (val >> shift) | (val << ((-shift) & mask));
-    }
+    #if defined(_MSC_VER)
 
-    inline uint32_t Rotate32(uint32_t val, int shift) { return RotateRight(val, shift); }
-    inline uint64_t Rotate64(uint64_t val, int shift) { return RotateRight(val, shift); }
+        inline uint32_t RotateRight32(uint32_t value, int shift) { return _rotr  (value, shift); }
+        inline uint64_t RotateRight64(uint64_t value, int shift) { return _rotr64(value, shift); }
+
+    #else // modern compilers automatically get this right, with no 'undefined' behaviour (https://goo.gl/ZsFpuz)
+
+        inline uint32_t RotateRight32(uint32_t value, unsigned shift) { shift &= 31; return (value >> shift) | (value << (32 - shift)); }
+        inline uint64_t RotateRight64(uint64_t value, unsigned shift) { shift &= 63; return (value >> shift) | (value << (64 - shift)); }
+
+    #endif
 
 }
 
@@ -90,8 +83,8 @@ namespace FarmHash {
     namespace {
 
         inline uint64_t Fetch(const uint8_t *p) { return Fetch64(p); }
-        inline uint64_t Rotate(uint64_t val, int shift) { return Rotate64(val, shift); }
-        inline uint64_t BSwap(uint64_t val) { return BSwap64(val); }
+        inline uint64_t RotateRight(uint64_t value, int shift) { return RotateRight64(value, shift); }
+        inline uint64_t BSwap(uint64_t value) { return BSwap64(value); }
 
         // Some primes between 2^63 and 2^64 for various uses.
 
@@ -111,8 +104,8 @@ namespace FarmHash {
             return b;
         }
 
-        inline uint64_t ShiftMix(uint64_t val) {
-            return val ^ (val >> 47);
+        inline uint64_t ShiftMix(uint64_t value) {
+            return value ^ (value >> 47);
         }
 
         inline uint64_t HashLen16(uint64_t u, uint64_t v) {
@@ -133,8 +126,8 @@ namespace FarmHash {
                 uint64_t mul = k2 + len * 2;
                 uint64_t a = Fetch(s) + k2;
                 uint64_t b = Fetch(s + len - 8);
-                uint64_t c = Rotate(b, 37) * mul + a;
-                uint64_t d = (Rotate(a, 25) + b) * mul;
+                uint64_t c = RotateRight(b, 37) * mul + a;
+                uint64_t d = (RotateRight(a, 25) + b) * mul;
                 return HashLen16(c, d, mul);
             }
             if (len >= 4) {
@@ -154,15 +147,15 @@ namespace FarmHash {
         }
 
         // Return a 16-byte hash for 48 bytes.  Quick and dirty.
-        // Callers do best to use "random-looking" values for a and b.
+        // Callers do best to use "random-looking" value for a and b.
 
         inline std::pair<uint64_t,uint64_t> WeakHashLen32WithSeeds(uint64_t w, uint64_t x, uint64_t y, uint64_t z, uint64_t a, uint64_t b) {
             a += w;
-            b = Rotate(b + a + z, 21);
+            b = RotateRight(b + a + z, 21);
             uint64_t c = a;
             a += x;
             a += y;
-            b += Rotate(a, 44);
+            b += RotateRight(a, 44);
             return std::make_pair(a + z, b + c);
         }
 
@@ -221,28 +214,28 @@ namespace FarmHash {
         uint64_t x = UInt128Low64(seed);
         uint64_t y = UInt128High64(seed);
         uint64_t z = len * k1;
-        v.first = Rotate(y ^ k1, 49) * k1 + Fetch(s);
-        v.second = Rotate(v.first, 42) * k1 + Fetch(s + 8);
-        w.first = Rotate(y + z, 35) * k1 + x;
-        w.second = Rotate(x + Fetch(s + 88), 53) * k1;
+        v.first = RotateRight(y ^ k1, 49) * k1 + Fetch(s);
+        v.second = RotateRight(v.first, 42) * k1 + Fetch(s + 8);
+        w.first = RotateRight(y + z, 35) * k1 + x;
+        w.second = RotateRight(x + Fetch(s + 88), 53) * k1;
 
         // This is the same inner loop as CityHash64(), manually unrolled.
 
         do {
-            x = Rotate(x + y + v.first + Fetch(s + 8), 37) * k1;
-            y = Rotate(y + v.second + Fetch(s + 48), 42) * k1;
+            x = RotateRight(x + y + v.first + Fetch(s + 8), 37) * k1;
+            y = RotateRight(y + v.second + Fetch(s + 48), 42) * k1;
             x ^= w.second;
             y += v.first + Fetch(s + 40);
-            z = Rotate(z + w.first, 33) * k1;
+            z = RotateRight(z + w.first, 33) * k1;
             v = WeakHashLen32WithSeeds(s, v.second * k1, x + w.first);
             w = WeakHashLen32WithSeeds(s + 32, z + w.second, y + Fetch(s + 16));
             std::swap(z, x);
             s += 64;
-            x = Rotate(x + y + v.first + Fetch(s + 8), 37) * k1;
-            y = Rotate(y + v.second + Fetch(s + 48), 42) * k1;
+            x = RotateRight(x + y + v.first + Fetch(s + 8), 37) * k1;
+            y = RotateRight(y + v.second + Fetch(s + 48), 42) * k1;
             x ^= w.second;
             y += v.first + Fetch(s + 40);
-            z = Rotate(z + w.first, 33) * k1;
+            z = RotateRight(z + w.first, 33) * k1;
             v = WeakHashLen32WithSeeds(s, v.second * k1, x + w.first);
             w = WeakHashLen32WithSeeds(s + 32, z + w.second, y + Fetch(s + 16));
             std::swap(z, x);
@@ -250,9 +243,9 @@ namespace FarmHash {
             len -= 128;
         } while (IsLikely(len >= 128));
 
-        x += Rotate(v.first + z, 49) * k0;
-        y = y * k0 + Rotate(w.second, 37);
-        z = z * k0 + Rotate(w.first, 27);
+        x += RotateRight(v.first + z, 49) * k0;
+        y = y * k0 + RotateRight(w.second, 37);
+        z = z * k0 + RotateRight(w.first, 27);
         w.first *= 9;
         v.first *= k0;
 
@@ -260,7 +253,7 @@ namespace FarmHash {
 
         for (size_t tail_done = 0; tail_done < len; ) {
             tail_done += 32;
-            y = Rotate(x + y, 42) * k0 + v.second;
+            y = RotateRight(x + y, 42) * k0 + v.second;
             w.first += Fetch(s + len - tail_done + 16);
             x = x * k0 + w.first;
             z += w.second + Fetch(s + len - tail_done);
