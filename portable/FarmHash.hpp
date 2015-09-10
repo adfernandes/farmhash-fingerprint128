@@ -57,15 +57,17 @@ namespace FarmHash {
 
     UInt128 Fingerprint128(const uint8_t *input, size_t length);
 
+    inline void Fingerprint128(const uint8_t *input, size_t length, uint8_t *output) {
+        *((UInt128 *)output) = Fingerprint128(input, length);
+    }
+
+    inline UInt128 Fingerprint128(const int8_t *input, size_t length)                  { return Fingerprint128((uint8_t *)input, length);  }
+    inline    void Fingerprint128(const int8_t *input, size_t length, uint8_t *output) { Fingerprint128((uint8_t *)input, length, output); }
+
     template <typename STR>
     inline UInt128 Fingerprint128(const STR &s) {
         static_assert(sizeof(s[0]) == 1, "elements of 'STR' must have a size equal to one");
         return Fingerprint128(s.data(), s.length());
-    }
-
-    inline void Fingerprint128(const uint8_t *input, size_t length, uint8_t *output) {
-        // TODO: Make the convenience function, byte-order indpendent...
-        // TODO: Then do the same for the template function!
     }
 
 }
