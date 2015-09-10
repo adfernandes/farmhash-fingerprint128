@@ -72,7 +72,7 @@ namespace {
     // Most compilers optimize this to a single instruction for 32- and 64-bits. Note that
     // GCC 4.9+ always gets it right, CLANG 3.5+ is optimal for 32-bit and sub-optimal for 64-bit,
     // ICC 13.0+ always gets it right, and Microsoft Visual C++ is untested. Under no circumstances
-    // does this produce a branch, though, so even sub-optimal code should be fast.
+    // does this produce a branch, though. Tested with https://goo.gl/GBVglk.
     inline UINT RotateRight(UINT val, INTEGRAL shift) {
         const UINT mask = CHAR_BIT * sizeof(val) - 1;
         assert(shift >= 0 && shift <= mask && "attempt to rotate by more than type-width");
